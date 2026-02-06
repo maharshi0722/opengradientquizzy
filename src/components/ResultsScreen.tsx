@@ -42,17 +42,18 @@ export function ResultsScreen({
 
   const handleShare = async () => {
     const text = `${shareText}\n\nhttps://opengradient.ai`;
-    
+    const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+
     if (navigator.share) {
       try {
         await navigator.share({ text });
+        return;
       } catch (err) {
-        // User cancelled
+        // If user cancels or native share fails, fall back to tweet intent.
       }
-    } else {
-      const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-      window.open(tweetUrl, '_blank');
     }
+
+    window.open(tweetUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
