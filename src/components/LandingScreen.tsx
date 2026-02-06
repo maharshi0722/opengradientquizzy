@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Logo } from './Logo';
 import { TwitterProfileCard } from './TwitterProfileCard';
 import { Button } from '@/components/ui/button';
@@ -10,27 +10,58 @@ interface LandingScreenProps {
   onStart: (username: string) => void;
 }
 
+const cleanUsername = (value: string) => value.replace('@', '').trim();
+
 export function LandingScreen({ onStart }: LandingScreenProps) {
   const [inputValue, setInputValue] = useState('');
   const { profile, loading, error, fetchProfile, clearProfile } = useTwitterProfile();
 
+  const lastFetchedRef = useRef<string>('');
+  const debounceRef = useRef<number | null>(null);
+
   const handleFetch = async () => {
-    if (inputValue.trim()) {
-      await fetchProfile(inputValue);
+    const cleaned = cleanUsername(inputValue);
+    if (cleaned) {
+      lastFetchedRef.current = cleaned.toLowerCase();
+      await fetchProfile(cleaned);
     }
   };
 
+  useEffect(() => {
+    const cleaned = cleanUsername(inputValue);
+
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current);
+    }
+
+    // Only auto-fetch when we have something meaningful and it changed
+    if (!cleaned) return;
+    if (cleaned.toLowerCase() === lastFetchedRef.current) return;
+
+    debounceRef.current = window.setTimeout(() => {
+      void handleFetch();
+    }, 600);
+
+    return () => {
+      if (debounceRef.current) {
+        window.clearTimeout(debounceRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleFetch();
+      void handleFetch();
     }
   };
 
   const handleStart = () => {
+    const cleaned = cleanUsername(inputValue);
     if (profile) {
       onStart(profile.screen_name);
-    } else if (inputValue.trim()) {
-      onStart(inputValue.replace('@', '').trim());
+    } else if (cleaned) {
+      onStart(cleaned);
     }
   };
 
@@ -82,12 +113,13 @@ export function LandingScreen({ onStart }: LandingScreenProps) {
                 className="pl-8"
               />
             </div>
-            <Button 
-              onClick={handleFetch} 
-              disabled={loading || !inputValue.trim()}
+            <Button
+              onClick={() => void handleFetch()}
+              disabled={loading || !cleanUsername(inputValue)}
               variant="outline"
               size="icon"
               className="h-12 w-12 shrink-0"
+              aria-label="Fetch X profile"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -96,9 +128,15 @@ export function LandingScreen({ onStart }: LandingScreenProps) {
               )}
             </Button>
           </div>
-          
+
           {error && (
             <p className="mt-3 text-sm text-destructive">{error}</p>
+          )}
+
+          {!error && cleanUsername(inputValue) && !profile && !loading && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Tip: profile preview loads automatically.
+            </p>
           )}
         </div>
 
@@ -110,9 +148,9 @@ export function LandingScreen({ onStart }: LandingScreenProps) {
         )}
 
         {/* Start Button */}
-        <Button 
+        <Button
           onClick={handleStart}
-          disabled={!inputValue.trim() && !profile}
+          disabled={!cleanUsername(inputValue) && !profile}
           variant="hero"
           size="xl"
           className="w-full"
