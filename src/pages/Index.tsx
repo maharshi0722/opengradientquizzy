@@ -1,12 +1,53 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useQuiz } from '@/hooks/useQuiz';
+import { LandingScreen } from '@/components/LandingScreen';
+import { QuizScreen } from '@/components/QuizScreen';
+import { ResultsScreen } from '@/components/ResultsScreen';
 
 const Index = () => {
+  const {
+    state,
+    currentQuestion,
+    currentQuestionIndex,
+    progress,
+    score,
+    timeTaken,
+    username,
+    leaderboard,
+    totalQuestions,
+    startQuiz,
+    answerQuestion,
+    resetQuiz,
+    getShareText,
+  } = useQuiz();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      {state === 'landing' && (
+        <LandingScreen onStart={startQuiz} />
+      )}
+
+      {state === 'quiz' && currentQuestion && (
+        <QuizScreen
+          question={currentQuestion}
+          currentIndex={currentQuestionIndex}
+          totalQuestions={totalQuestions}
+          progress={progress}
+          score={score}
+          onAnswer={answerQuestion}
+        />
+      )}
+
+      {state === 'results' && (
+        <ResultsScreen
+          score={score}
+          totalQuestions={totalQuestions}
+          timeTaken={timeTaken}
+          username={username}
+          leaderboard={leaderboard}
+          shareText={getShareText()}
+          onRestart={resetQuiz}
+        />
+      )}
     </div>
   );
 };
