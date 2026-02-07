@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Question, QuizState, LeaderboardEntry } from '@/types/quiz';
+import { Question, QuizState, LeaderboardEntry, TwitterProfile } from '@/types/quiz';
 import { quizData } from '@/data/quizData';
 
 export function useQuiz() {
@@ -10,9 +10,10 @@ export function useQuiz() {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
   const [username, setUsername] = useState('');
+  const [twitterProfile, setTwitterProfile] = useState<TwitterProfile | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
-  const currentQuestion: Question | null = 
+  const currentQuestion: Question | null =
     state === 'quiz' ? quizData.questions[currentQuestionIndex] : null;
 
   const progress = ((currentQuestionIndex + 1) / quizData.totalQuestions) * 100;
@@ -26,8 +27,9 @@ export function useQuiz() {
     }
   }, []);
 
-  const startQuiz = useCallback((user: string) => {
+  const startQuiz = useCallback((user: string, profile?: TwitterProfile | null) => {
     setUsername(user);
+    setTwitterProfile(profile ?? null);
     setCurrentQuestionIndex(0);
     setAnswers([]);
     setScore(0);
@@ -39,7 +41,7 @@ export function useQuiz() {
   const answerQuestion = useCallback((answerIndex: number) => {
     const question = quizData.questions[currentQuestionIndex];
     const isCorrect = answerIndex === question.answer;
-    
+
     setAnswers(prev => [...prev, answerIndex]);
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -53,23 +55,24 @@ export function useQuiz() {
         setEndTime(end);
         const finalScore = isCorrect ? score + 1 : score;
         const time = Math.floor((end - (startTime || end)) / 1000);
-        
+
         const newEntry: LeaderboardEntry = {
           username,
           score: finalScore,
           timeTakenSeconds: time,
+          avatar: twitterProfile?.avatar,
         };
-        
+
         const updated = [...leaderboard, newEntry]
           .sort((a, b) => b.score - a.score || a.timeTakenSeconds - b.timeTakenSeconds)
           .slice(0, 10);
-        
+
         setLeaderboard(updated);
         localStorage.setItem('og-quiz-leaderboard', JSON.stringify(updated));
         setState('results');
       }
     }, 1500);
-  }, [currentQuestionIndex, score, startTime, username, leaderboard]);
+  }, [currentQuestionIndex, score, startTime, username, leaderboard, twitterProfile]);
 
   const resetQuiz = useCallback(() => {
     setState('landing');
@@ -78,6 +81,7 @@ export function useQuiz() {
     setScore(0);
     setStartTime(null);
     setEndTime(null);
+    setTwitterProfile(null);
   }, []);
 
   const getShareText = useCallback(() => {
@@ -92,6 +96,7 @@ export function useQuiz() {
     score,
     timeTaken,
     username,
+    twitterProfile,
     leaderboard,
     answers,
     totalQuestions: quizData.totalQuestions,
@@ -101,3 +106,4 @@ export function useQuiz() {
     getShareText,
   };
 }
+
