@@ -7,7 +7,7 @@ import { useTwitterProfile } from '@/hooks/useTwitterProfile';
 import { Search, Zap, Brain, Loader2 } from 'lucide-react';
 
 interface LandingScreenProps {
-  onStart: (username: string) => void;
+  onStart: (username: string, profile?: import('@/types/quiz').TwitterProfile | null) => void;
 }
 
 const cleanUsername = (value: string) => value.replace('@', '').trim();
@@ -59,9 +59,9 @@ export function LandingScreen({ onStart }: LandingScreenProps) {
   const handleStart = () => {
     const cleaned = cleanUsername(inputValue);
     if (profile) {
-      onStart(profile.screen_name);
+      onStart(profile.screen_name, profile);
     } else if (cleaned) {
-      onStart(cleaned);
+      onStart(cleaned, null);
     }
   };
 

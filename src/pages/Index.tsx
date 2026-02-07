@@ -12,6 +12,7 @@ const Index = () => {
     score,
     timeTaken,
     username,
+    twitterProfile,
     leaderboard,
     totalQuestions,
     startQuiz,
@@ -33,6 +34,8 @@ const Index = () => {
           totalQuestions={totalQuestions}
           progress={progress}
           score={score}
+          username={username}
+          twitterProfile={twitterProfile}
           onAnswer={answerQuestion}
         />
       )}

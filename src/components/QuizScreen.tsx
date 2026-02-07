@@ -9,6 +9,8 @@ interface QuizScreenProps {
   totalQuestions: number;
   progress: number;
   score: number;
+  username: string;
+  twitterProfile?: import('@/types/quiz').TwitterProfile | null;
   onAnswer: (index: number) => void;
 }
 
@@ -18,6 +20,8 @@ export function QuizScreen({
   totalQuestions,
   progress,
   score,
+  username,
+  twitterProfile,
   onAnswer,
 }: QuizScreenProps) {
   return (
@@ -30,9 +34,28 @@ export function QuizScreen({
             OpenGradient Quizzy
           </span>
         </div>
-        <div className="glass-card px-4 py-2 rounded-lg">
-          <span className="text-sm text-muted-foreground">Score: </span>
-          <span className="font-display font-bold text-primary">{score}</span>
+
+        <div className="flex items-center gap-3">
+          {(twitterProfile?.avatar || username) && (
+            <div className="glass-card px-3 py-2 rounded-lg flex items-center gap-2 max-w-[220px]">
+              {twitterProfile?.avatar ? (
+                <img
+                  src={twitterProfile.avatar}
+                  alt={twitterProfile.screen_name || username}
+                  className="w-7 h-7 rounded-full ring-2 ring-primary/40"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-muted" aria-hidden="true" />
+              )}
+              <span className="text-sm text-muted-foreground truncate">@{twitterProfile?.screen_name || username}</span>
+            </div>
+          )}
+
+          <div className="glass-card px-4 py-2 rounded-lg">
+            <span className="text-sm text-muted-foreground">Score: </span>
+            <span className="font-display font-bold text-primary">{score}</span>
+          </div>
         </div>
       </div>
 
