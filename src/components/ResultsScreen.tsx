@@ -105,7 +105,7 @@ export function ResultsScreen({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button onClick={handleShare} variant="hero" size="lg" className="flex-1">
+          <Button disabled variant="hero" size="lg" className="flex-1 opacity-50 cursor-not-allowed">
             <Share2 className="w-5 h-5" />
             Share on X
           </Button>
